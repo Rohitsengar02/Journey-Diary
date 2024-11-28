@@ -12,8 +12,10 @@ const imagePreview = document.getElementById("image-preview");
 const viewPageModal = document.getElementById("view-page-modal");
 const viewPageDetails = document.getElementById("view-page-details");
 const closeViewBtn = document.getElementById("close-view-btn");
+const deletePageBtn = document.createElement("button"); // Create delete button dynamically
 
 let quill; // Quill editor instance
+let currentPageIndex = null; // Track the index of the currently viewed page
 
 // Initialize Quill editor
 function initializeQuill() {
@@ -79,17 +81,11 @@ function loadPages() {
 
 // Save a page
 function savePage() {
-  console.log("savePage function triggered"); // Debugging
-
   const title = pageTitleInput.value.trim();
   const text = quill.root.innerHTML; // Get Quill editor content
   const images = Array.from(imageInput.files).map((file) =>
     URL.createObjectURL(file)
   );
-
-  console.log("Title:", title); // Debugging
-  console.log("Text:", text); // Debugging
-  console.log("Images:", images); // Debugging
 
   // Validation
   if (!text && images.length === 0) {
@@ -109,9 +105,11 @@ function savePage() {
 
 // View a page
 function viewPage(index) {
+  currentPageIndex = index; // Track the currently viewed page
   const pages = JSON.parse(localStorage.getItem("journeyPages"));
   const page = pages[index];
 
+  // Populate view modal
   viewPageDetails.innerHTML = `
     <h2>${page.title || "Untitled"}</h2>
     <div>${page.text}</div> <!-- Display rich text content -->
@@ -119,7 +117,27 @@ function viewPage(index) {
       ${page.images.map((img) => `<img src="${img}" alt="Page Image">`).join("")}
     </div>
   `;
+
+  // Add delete button
+  deletePageBtn.textContent = "Delete Page";
+  deletePageBtn.className = "delete-page-btn";
+  deletePageBtn.addEventListener("click", deletePage); // Bind delete action
+  viewPageDetails.appendChild(deletePageBtn);
+
   viewPageModal.classList.remove("hidden");
+}
+
+// Delete a page
+function deletePage() {
+  if (currentPageIndex === null) return; // Safety check
+
+  const pages = JSON.parse(localStorage.getItem("journeyPages"));
+  pages.splice(currentPageIndex, 1); // Remove the page at the current index
+  localStorage.setItem("journeyPages", JSON.stringify(pages));
+
+  // Close modal and reload pages
+  closeViewModal();
+  loadPages();
 }
 
 // Close the modal
@@ -133,24 +151,20 @@ function closeModal() {
 
 // Close the view modal
 function closeViewModal() {
+  currentPageIndex = null; // Reset the current page index
   viewPageModal.classList.add("hidden");
 }
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Initializing app..."); // Debugging
   initializeQuill(); // Initialize Quill editor
   loadPages(); // Load pages from localStorage
 
   // Bind event listeners
   newPageBtn.addEventListener("click", () => {
-    console.log("Opening modal for new page creation"); // Debugging
     modal.classList.remove("hidden");
   });
   closeModalBtn.addEventListener("click", closeModal);
   closeViewBtn.addEventListener("click", closeViewModal);
-  savePageBtn.addEventListener("click", () => {
-    console.log("Save button clicked"); // Debugging
-    savePage();
-  });
+  savePageBtn.addEventListener("click", savePage);
 });

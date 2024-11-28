@@ -107,6 +107,7 @@ function savePage() {
 }
 
 // View a page (full preview)
+// View a page (responsive full preview)
 function viewPage(index) {
   currentPageIndex = index; // Track the currently viewed page
   const pages = JSON.parse(localStorage.getItem("journeyPages"));
@@ -124,11 +125,12 @@ function viewPage(index) {
   // Add delete button
   deletePageBtn.textContent = "Delete Page";
   deletePageBtn.className = "delete-page-btn";
-  deletePageBtn.addEventListener("click", deletePage); // Bind delete action
+  deletePageBtn.onclick = deletePage; // Assign delete action
   viewPageDetails.appendChild(deletePageBtn);
 
   viewPageModal.classList.remove("hidden");
 }
+
 
 // Delete a page
 function deletePage() {

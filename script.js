@@ -12,7 +12,7 @@ const imagePreview = document.getElementById("image-preview");
 const viewPageModal = document.getElementById("view-page-modal");
 const viewPageDetails = document.getElementById("view-page-details");
 const closeViewBtn = document.getElementById("close-view-btn");
-const deletePageBtn = document.createElement("button"); // Create delete button dynamically
+const deletePageBtn = document.createElement("button"); // Dynamically created delete button
 
 let quill; // Quill editor instance
 let currentPageIndex = null; // Track the index of the currently viewed page
@@ -58,23 +58,26 @@ function loadPages() {
     const pageCard = document.createElement("div");
     pageCard.classList.add("page-card");
 
+    // Add heading (title)
     if (page.title) {
       const titleElement = document.createElement("h2");
       titleElement.textContent = page.title;
       pageCard.appendChild(titleElement);
     }
 
-    const contentElement = document.createElement("p");
-    contentElement.innerHTML = page.text; // Render rich text content
-    pageCard.appendChild(contentElement);
-
+    // Add thumbnail image
     if (page.images.length > 0) {
-      const imageElement = document.createElement("img");
-      imageElement.src = page.images[0]; // Display the first image
-      pageCard.appendChild(imageElement);
+      const thumbnailElement = document.createElement("img");
+      thumbnailElement.src = page.images[0]; // Display the first image
+      thumbnailElement.alt = "Page Thumbnail";
+      thumbnailElement.classList.add("thumbnail");
+      pageCard.appendChild(thumbnailElement);
     }
 
+    // Add click event for full preview
     pageCard.addEventListener("click", () => viewPage(index));
+
+    // Append the card to the grid
     pagesGrid.appendChild(pageCard);
   });
 }
@@ -88,8 +91,8 @@ function savePage() {
   );
 
   // Validation
-  if (!text && images.length === 0) {
-    alert("Please provide some content or images for the page.");
+  if (!title && !text && images.length === 0) {
+    alert("Please provide a title, content, or images for the page.");
     return;
   }
 
@@ -103,7 +106,7 @@ function savePage() {
   closeModal();
 }
 
-// View a page
+// View a page (full preview)
 function viewPage(index) {
   currentPageIndex = index; // Track the currently viewed page
   const pages = JSON.parse(localStorage.getItem("journeyPages"));

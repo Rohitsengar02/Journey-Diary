@@ -27,11 +27,11 @@ function initializeQuill() {
         ["blockquote", "code-block"],
         [{ list: "ordered" }, { list: "bullet" }],
         [{ header: [1, 2, 3, 4, 5, 6, false] }],
-        ["link", "image"]
+        ["link", "image"],
       ],
     },
   });
-  console.log("Quill editor initialized");
+  console.log("Quill editor initialized:", quill);
 }
 
 // Light/Dark mode toggle
@@ -83,10 +83,12 @@ function savePage() {
 
   const title = pageTitleInput.value.trim();
   const text = quill.root.innerHTML; // Get Quill editor content
-  const images = Array.from(imageInput.files).map(file => URL.createObjectURL(file));
+  const images = Array.from(imageInput.files).map((file) =>
+    URL.createObjectURL(file)
+  );
 
   console.log("Title:", title); // Debugging
-  console.log("Text:", text);  // Debugging
+  console.log("Text:", text); // Debugging
   console.log("Images:", images); // Debugging
 
   // Validation
@@ -114,7 +116,7 @@ function viewPage(index) {
     <h2>${page.title || "Untitled"}</h2>
     <div>${page.text}</div> <!-- Display rich text content -->
     <div class="image-preview">
-      ${page.images.map(img => `<img src="${img}" alt="Page Image">`).join("")}
+      ${page.images.map((img) => `<img src="${img}" alt="Page Image">`).join("")}
     </div>
   `;
   viewPageModal.classList.remove("hidden");
@@ -136,8 +138,9 @@ function closeViewModal() {
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("Initializing app..."); // Debugging
   initializeQuill(); // Initialize Quill editor
-  loadPages();       // Load pages from localStorage
+  loadPages(); // Load pages from localStorage
 
   // Bind event listeners
   newPageBtn.addEventListener("click", () => {
@@ -146,5 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   closeModalBtn.addEventListener("click", closeModal);
   closeViewBtn.addEventListener("click", closeViewModal);
-  savePageBtn.addEventListener("click", savePage);
+  savePageBtn.addEventListener("click", () => {
+    console.log("Save button clicked"); // Debugging
+    savePage();
+  });
 });

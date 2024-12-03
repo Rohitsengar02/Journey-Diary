@@ -15,7 +15,7 @@ const closeViewBtn = document.getElementById("close-view-btn");
 const deletePageBtn = document.createElement("button"); // Dynamically created delete button
 
 let quill; // Quill editor instance
-let currentPageIndex = null; // Track the index of the currently viewed page
+let currentPageIndex = null; // Track the index of the currently viewed/edited page
 
 // Initialize Quill editor
 function initializeQuill() {
@@ -45,7 +45,6 @@ toggleModeBtn.addEventListener("click", () => {
 });
 
 // Load pages from localStorage
-// Add Edit button and functionality
 function loadPages() {
   const pages = JSON.parse(localStorage.getItem("journeyPages")) || [];
   pagesGrid.innerHTML = ""; // Clear existing pages
@@ -93,26 +92,7 @@ function loadPages() {
   });
 }
 
-// Edit a page
-function editPage(index) {
-  const pages = JSON.parse(localStorage.getItem("journeyPages"));
-  const page = pages[index];
-
-  // Populate the modal with the existing story's data
-  pageTitleInput.value = page.title || "";
-  quill.root.innerHTML = page.text || ""; // Populate Quill editor with existing content
-
-  // Populate image preview
-  imagePreview.innerHTML = page.images
-    .map((img) => `<img src="${img}" alt="Page Image" class="thumbnail">`)
-    .join("");
-
-  // Show the modal and set currentPageIndex
-  modal.classList.remove("hidden");
-  currentPageIndex = index;
-}
-
-// Save a page (modified to handle edit functionality)
+// Save a page
 function savePage() {
   const title = pageTitleInput.value.trim();
   const text = quill.root.innerHTML; // Get Quill editor content
@@ -131,8 +111,13 @@ function savePage() {
 
   if (currentPageIndex !== null) {
     // Edit existing page
-    pages[currentPageIndex] = { title, text, images };
-    currentPageIndex = null; // Reset index after editing
+    pages[currentPageIndex].title = title;
+    pages[currentPageIndex].text = text;
+
+    // Update images only if new images are uploaded
+    if (images.length > 0) {
+      pages[currentPageIndex].images = images;
+    }
   } else {
     // Save new page
     pages.push({ title, text, images });
@@ -145,47 +130,26 @@ function savePage() {
   closeModal();
 }
 
-// Event listeners
-document.addEventListener("DOMContentLoaded", () => {
-  initializeQuill(); // Initialize Quill editor
-  loadPages(); // Load pages from localStorage
+// Edit a page
+function editPage(index) {
+  const pages = JSON.parse(localStorage.getItem("journeyPages"));
+  const page = pages[index];
 
-  // Bind event listeners
-  newPageBtn.addEventListener("click", () => {
-    modal.classList.remove("hidden");
-    currentPageIndex = null; // Ensure new page mode
-  });
-  closeModalBtn.addEventListener("click", closeModal);
-  closeViewBtn.addEventListener("click", closeViewModal);
-  savePageBtn.addEventListener("click", savePage);
-});
+  // Populate the modal with the existing story's data
+  pageTitleInput.value = page.title || "";
+  quill.root.innerHTML = page.text || ""; // Populate Quill editor with existing content
 
-// Save a page
-function savePage() {
-  const title = pageTitleInput.value.trim();
-  const text = quill.root.innerHTML; // Get Quill editor content
-  const images = Array.from(imageInput.files).map((file) =>
-    URL.createObjectURL(file)
-  );
+  // Populate image preview
+  imagePreview.innerHTML = page.images
+    .map((img) => `<img src="${img}" alt="Page Image" class="thumbnail">`)
+    .join("");
 
-  // Validation
-  if (!title && !text && images.length === 0) {
-    alert("Please provide a title, content, or images for the page.");
-    return;
-  }
-
-  // Retrieve existing pages or initialize an empty array
-  const pages = JSON.parse(localStorage.getItem("journeyPages")) || [];
-  pages.push({ title, text, images });
-  localStorage.setItem("journeyPages", JSON.stringify(pages));
-
-  // Reload pages and close modal
-  loadPages();
-  closeModal();
+  // Show the modal and set currentPageIndex to the index of the story being edited
+  modal.classList.remove("hidden");
+  currentPageIndex = index;
 }
 
 // View a page (full preview)
-// View a page (responsive full preview)
 function viewPage(index) {
   currentPageIndex = index; // Track the currently viewed page
   const pages = JSON.parse(localStorage.getItem("journeyPages"));
@@ -209,7 +173,6 @@ function viewPage(index) {
   viewPageModal.classList.remove("hidden");
 }
 
-
 // Delete a page
 function deletePage() {
   if (currentPageIndex === null) return; // Safety check
@@ -230,6 +193,7 @@ function closeModal() {
   quill.root.innerHTML = ""; // Clear Quill editor content
   imageInput.value = ""; // Clear the file input
   imagePreview.innerHTML = ""; // Clear the image preview
+  currentPageIndex = null; // Reset currentPageIndex after closing the modal
 }
 
 // Close the view modal
@@ -246,6 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Bind event listeners
   newPageBtn.addEventListener("click", () => {
     modal.classList.remove("hidden");
+    currentPageIndex = null; // Ensure new page mode
   });
   closeModalBtn.addEventListener("click", closeModal);
   closeViewBtn.addEventListener("click", closeViewModal);

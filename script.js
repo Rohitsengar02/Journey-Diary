@@ -45,6 +45,7 @@ toggleModeBtn.addEventListener("click", () => {
 });
 
 // Load pages from localStorage
+// Add Edit button and functionality
 function loadPages() {
   const pages = JSON.parse(localStorage.getItem("journeyPages")) || [];
   pagesGrid.innerHTML = ""; // Clear existing pages
@@ -77,10 +78,87 @@ function loadPages() {
     // Add click event for full preview
     pageCard.addEventListener("click", () => viewPage(index));
 
+    // Add Edit button
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit Story";
+    editButton.className = "edit-page-btn";
+    editButton.addEventListener("click", (event) => {
+      event.stopPropagation(); // Prevent triggering the page preview
+      editPage(index);
+    });
+    pageCard.appendChild(editButton);
+
     // Append the card to the grid
     pagesGrid.appendChild(pageCard);
   });
 }
+
+// Edit a page
+function editPage(index) {
+  const pages = JSON.parse(localStorage.getItem("journeyPages"));
+  const page = pages[index];
+
+  // Populate the modal with the existing story's data
+  pageTitleInput.value = page.title || "";
+  quill.root.innerHTML = page.text || ""; // Populate Quill editor with existing content
+
+  // Populate image preview
+  imagePreview.innerHTML = page.images
+    .map((img) => `<img src="${img}" alt="Page Image" class="thumbnail">`)
+    .join("");
+
+  // Show the modal and set currentPageIndex
+  modal.classList.remove("hidden");
+  currentPageIndex = index;
+}
+
+// Save a page (modified to handle edit functionality)
+function savePage() {
+  const title = pageTitleInput.value.trim();
+  const text = quill.root.innerHTML; // Get Quill editor content
+  const images = Array.from(imageInput.files).map((file) =>
+    URL.createObjectURL(file)
+  );
+
+  // Validation
+  if (!title && !text && images.length === 0) {
+    alert("Please provide a title, content, or images for the page.");
+    return;
+  }
+
+  // Retrieve existing pages or initialize an empty array
+  const pages = JSON.parse(localStorage.getItem("journeyPages")) || [];
+
+  if (currentPageIndex !== null) {
+    // Edit existing page
+    pages[currentPageIndex] = { title, text, images };
+    currentPageIndex = null; // Reset index after editing
+  } else {
+    // Save new page
+    pages.push({ title, text, images });
+  }
+
+  localStorage.setItem("journeyPages", JSON.stringify(pages));
+
+  // Reload pages and close modal
+  loadPages();
+  closeModal();
+}
+
+// Event listeners
+document.addEventListener("DOMContentLoaded", () => {
+  initializeQuill(); // Initialize Quill editor
+  loadPages(); // Load pages from localStorage
+
+  // Bind event listeners
+  newPageBtn.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+    currentPageIndex = null; // Ensure new page mode
+  });
+  closeModalBtn.addEventListener("click", closeModal);
+  closeViewBtn.addEventListener("click", closeViewModal);
+  savePageBtn.addEventListener("click", savePage);
+});
 
 // Save a page
 function savePage() {

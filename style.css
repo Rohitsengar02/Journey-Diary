@@ -169,3 +169,17 @@ body.dark-mode .page-card {
   color: white;
   border: 1px solid #444;
 }
+/* Edit Button Styling */
+.edit-page-btn {
+  background-color: #03a9f4;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.edit-page-btn:hover {
+  background-color: #0288d1;
+}
